@@ -31,15 +31,33 @@
         inherit (pkgs) lib;
 
         craneLib = crane.mkLib pkgs;
-        src = craneLib.cleanCargoSource ./.;
+        src =
+          let
+            unfilteredRoot = ./.;
+          in
+          lib.fileset.toSource {
+            root = unfilteredRoot;
+            fileset = lib.fileset.unions [
+              # Default files from crane (Rust and cargo files)
+              (craneLib.fileset.commonCargoSources unfilteredRoot)
+              # Also keep any markdown files
+              (lib.fileset.fileFilter (file: file.hasExt "md") unfilteredRoot)
+              # Example of a folder for images, icons, etc
+              (lib.fileset.maybeMissing ./assets)
+            ];
+          };
 
         # Common arguments can be set here to avoid repeating them later
         commonArgs = {
           inherit src;
           strictDeps = true;
 
+          nativeBuildInputs = [
+            pkgs.pkg-config
+          ];
+
           buildInputs = [
-            # Add additional build inputs here
+            pkgs.alsa-lib
           ]
           ++ lib.optionals pkgs.stdenv.isDarwin [
             # Additional darwin specific inputs can be set here
@@ -149,6 +167,7 @@
           ++ (with pkgs; [
             rustfmt
             rust-analyzer
+            my-crate
           ]);
           shellHook = ''
             export REPO_ROOT=$(git rev-parse --show-toplevel)
