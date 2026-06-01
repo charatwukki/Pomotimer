@@ -64,26 +64,77 @@ fn timer(secs: u64) {
         std::thread::sleep(time::Duration::from_secs(1))
     }
 }
+fn print_bar(width: u16) {
+    use crossterm::execute;
+    use crossterm::style::{Color, Print, ResetColor, SetForegroundColor};
+    use std::io::stdout;
+    for i in 0..width.clamp(0, 75) {
+        let g = 50 + (i / 2) as u8;
+        let base_r = 255 - width as u8 - (i * 2) as u8;
+        let r = if width < 10 {
+            (base_r as f32 * (width as f32 / 10.0).powf(0.3)).max(0.0) as u8
+        } else {
+            base_r
+        };
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::Rgb { r, g, b: 255 }),
+            Print("█"),
+            ResetColor
+        )
+        .unwrap();
+    }
+    for _ in 0..75 - width {
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::Rgb {
+                r: 45,
+                g: 45,
+                b: 45
+            }),
+            Print("█"),
+            ResetColor
+        )
+        .unwrap();
+    }
+    println!("{}", ResetColor);
+}
+fn print_bar_percent(percentage: f32) {
+    print_bar((percentage * (75 as f32)) as u16);
+}
 
 fn main() {
-    // let duration = humantime::parse_duration("50s").unwrap();
-    // println!("{}", duration.as_millis());
+    use crossterm::{cursor, execute, terminal};
+    use std::io::stdout;
+    execute!(stdout(), cursor::SavePosition).unwrap();
+    for i in 0..101 {
+        execute!(
+            stdout(),
+            cursor::RestorePosition,
+            terminal::Clear(terminal::ClearType::FromCursorDown)
+        )
+        .unwrap();
+        print_bar_percent({ i as f32 } / 100.0);
+        std::thread::sleep(time::Duration::from_millis(200));
+    }
+
     let args = Args::parse();
 
     match args.command {
         Commands::Run { study, rest } => {
             use humantime::parse_duration;
+            timer(parse_duration(&study).unwrap().as_secs()); // BUG: I need to error handle this
+                                                              // but i don't care tbh
             send_notification(
                 "Study Finished",
                 &format!("Your study timer of {} is finished", study),
             );
             play_finish();
-            timer(parse_duration(&study).unwrap().as_secs());
+            timer(parse_duration(&rest).unwrap().as_secs());
             send_notification(
                 "Break Finished",
                 &format!("Your rest timer of {} is finished", rest),
             );
-            timer(parse_duration(&rest).unwrap().as_secs());
             play_end();
         }
         Commands::Connect { .. } => {
