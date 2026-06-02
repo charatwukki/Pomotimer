@@ -53,7 +53,7 @@ fn play_finish() {
     use std::io::BufReader;
     use std::io::Cursor;
     let mut sink_handle =
-        rodio::DeviceSinkBuilder::open_default_sink().expect("open default audio stream");
+        rodio::DeviceSinkBuilder::open_default_sink().unwrap();
     sink_handle.log_on_drop(false);
     let cursor = Cursor::new(include_bytes!("../assets/sfx/POMODORO-FINISH.wav").as_ref());
     let file = BufReader::new(cursor);
@@ -66,7 +66,7 @@ fn play_end() {
     use std::io::BufReader;
     use std::io::Cursor;
     let mut sink_handle =
-        rodio::DeviceSinkBuilder::open_default_sink().expect("open default audio stream");
+        rodio::DeviceSinkBuilder::open_default_sink().unwrap();
     sink_handle.log_on_drop(false);
     let cursor = Cursor::new(include_bytes!("../assets/sfx/POMODORO-BREAK-END.wav").as_ref());
     let file = BufReader::new(cursor);
