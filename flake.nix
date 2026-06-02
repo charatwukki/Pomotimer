@@ -165,6 +165,14 @@
           drv = my-crate;
         };
 
+        devShells.pomotimer = pkgs.mkShell {
+          packages = [ my-crate ];
+          shellHook = ''
+            export REPO_ROOT=$(git rev-parse --show-toplevel)
+            export PS1="Pomotimer $"
+            export PS1="\[\e[38;5;141m\]❯\[\e[0m\] "
+          '';
+        };
         devShells.default = craneLib.devShell {
           # Inherit inputs from checks.
           checks = self.checks.${system};
@@ -174,12 +182,10 @@
 
           # Extra inputs can be added here; cargo and rustc are provided by default.
           packages = [
-            # pkgs.ripgrep
           ]
           ++ (with pkgs; [
             rustfmt
             rust-analyzer
-            my-crate
             cargo-xwin
           ]);
           shellHook = ''
