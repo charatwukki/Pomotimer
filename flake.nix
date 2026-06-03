@@ -79,6 +79,7 @@
           # Additional environment variables can be set directly
           # MY_CUSTOM_VAR = "some value";
           # RUST_MIN_STACK = 134217728; # NOTE: good luck compiling this xDD
+          CARGO_BUILD_JOBS = 4; # NOTE: yeah heres the fix from the constant OOM
         };
 
         # Build *just* the cargo dependencies, so we can reuse
