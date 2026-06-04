@@ -1,8 +1,8 @@
-use notify_rust::Notification;
-use std::time::Duration;
-
+use crate::structs::RunArgs;
 use chrono::{NaiveDate, NaiveTime, Timelike};
+use notify_rust::Notification;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 #[derive(Deserialize, Serialize, Debug)]
 struct Log {
     #[serde(rename = "userId")]
@@ -175,42 +175,90 @@ fn write_log(log: Log) {
     }
 }
 
-use crate::structs::RunArgs;
+enum PomoType {
+    Rest,
+    Study,
+}
+
+fn pomo_activity(
+    name: &String,
+    time: Duration,
+    pomotype: PomoType,
+) -> discord_rich_presence::activity::Activity<'static> {
+    use discord_rich_presence::activity::{
+        Activity, ActivityType, Assets, Button, StatusDisplayType, Timestamps,
+    };
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let dnow = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs() as i64;
+
+    let mut act = Activity::new() // TODO: Implement secrets/party when i make multiplayer.
+        .name("Pomodoro")
+        .details_url("https://example.com/details") // TODO: Point this to readme
+        .state(format!("Doing {}", name)) // TODO: fix on empty
+        .state_url("https://example.com/state")
+        .activity_type(ActivityType::Competing)
+        .status_display_type(StatusDisplayType::Name)
+        .timestamps(
+            Timestamps::new()
+                .start(dnow)
+                .end(dnow + time.as_secs() as i64),
+        )
+        .buttons(vec![
+            Button::new("Source Code", "https://github.com/charatwukki/Pomotimer"),
+            // Button::new("Visit Site", "https://example.com"),
+        ]);
+    match pomotype {
+        PomoType::Rest => {
+            act = act.details("Working Hard!").assets(
+                Assets::new()
+                    .large_image("todo")
+                    .large_text("Pomodoro Timer")
+                    .small_image("rest")
+                    .small_text("Resting"),
+            );
+        }
+        PomoType::Study => {
+            act = act.details("Studying zzz...").assets(
+                Assets::new()
+                    .large_image("todo")
+                    .large_text("Pomodoro Timer")
+                    .small_image("study")
+                    .small_text("Studying"),
+            );
+        }
+    };
+    act
+}
+
 pub fn run(
     runargs: crate::structs::RunArgs,
     _status: Box<dyn Fn(discord_rich_presence::activity::Activity)>,
 ) {
-    use discord_rich_presence::activity::{Activity, Assets};
     let RunArgs { study, rest, name } = runargs;
     use humantime::parse_duration;
     let now = chrono::Local::now();
     let mut timestamps: Vec<NaiveTime> = vec![];
+    let studyduration = parse_duration(&study).unwrap();
+    let restduration = parse_duration(&rest).unwrap();
 
     timestamps.push(chrono::Local::now().time().with_nanosecond(0).unwrap());
-    _status(
-        Activity::new()
-            .state(format!("Studying for {}", study))
-            .details("Studying currently.")
-            .name("Pomodoro")
-            .assets(Assets::new().small_image("study").small_text("idrk")),
-    );
-    timer(parse_duration(&study).unwrap()); // BUG: I need to error handle this
-                                            // but i don't care tbh
+    _status(pomo_activity(&name, studyduration, PomoType::Study));
+    timer(studyduration); // BUG: I need to error handle this
+                          // but i don't care tbh
     send_notification(
         "Study Finished",
         &format!("Your study timer of {} is finished", study),
     );
     play_finish();
     timestamps.push(chrono::Local::now().time().with_nanosecond(0).unwrap());
-    _status(
-        Activity::new()
-            .state(format!("Rest for {}", rest))
-            .details("resting time woohoo")
-            .name("Pomodoro")
-            .assets(Assets::new().small_image("rest").small_text("idrk")),
-    );
-    timer(parse_duration(&rest).unwrap()); // TODO: I want more granularity. like
-                                           // seconds and stuff
+
+    _status(pomo_activity(&name, studyduration, PomoType::Rest));
+    timer(restduration); // TODO: I want more granularity. like
+                         // seconds and stuff
     timestamps.push(chrono::Local::now().time().with_nanosecond(0).unwrap());
     send_notification(
         "Break Finished",
