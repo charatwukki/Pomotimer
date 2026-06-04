@@ -79,7 +79,8 @@
           # Additional environment variables can be set directly
           # MY_CUSTOM_VAR = "some value";
           # RUST_MIN_STACK = 134217728; # NOTE: good luck compiling this xDD
-          CARGO_BUILD_JOBS = 4; # NOTE: yeah heres the fix from the constant OOM
+          CARGO_BUILD_JOBS = 2; # NOTE: yeah heres the fix from the constant OOM
+          # I've set it to 2, fuck off kernel panic
         };
 
         # Build *just* the cargo dependencies, so we can reuse
@@ -173,7 +174,7 @@
             export REPO_ROOT=$(git rev-parse --show-toplevel)
             export PS1="Pomotimer $"
             export PS1="\[\e[38;5;141m\]❯\[\e[0m\] "
-				clear
+            clear
           '';
         };
         devShells.default = craneLib.devShell {
