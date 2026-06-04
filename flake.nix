@@ -173,6 +173,7 @@
             export REPO_ROOT=$(git rev-parse --show-toplevel)
             export PS1="Pomotimer $"
             export PS1="\[\e[38;5;141m\]❯\[\e[0m\] "
+				clear
           '';
         };
         devShells.default = craneLib.devShell {
