@@ -1,8 +1,8 @@
 use clap::Parser;
 
-use crate::host::host_iroh;
+use crate::networking::{host_iroh, join_iroh};
 
-mod host;
+mod networking;
 mod structs;
 
 fn set_status() -> Box<dyn Fn(discord_rich_presence::activity::Activity)> {
@@ -69,10 +69,12 @@ async fn main() {
             let _status = set_status();
             run::run(runargs, _status);
         }
-        Commands::Host { .. } => {
-            let _ = host_iroh().await;
+        Commands::Host(hostargs) => {
+            let _ = host_iroh(hostargs).await;
         }
-        // Commands::Connect { .. } => {}
+        // Commands::Join(joinargs) => {
+        //     let _ = join_iroh(joinargs).await;
+        // }
         _ => {
             println!("Sorry I haven't implemented this yet. Coming soon tho!!")
         }

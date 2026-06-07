@@ -23,18 +23,35 @@ pub struct RunArgs {
     pub name: String,
 }
 
+#[derive(clap::Args, Debug)]
+pub struct HostArgs {
+    #[arg(default_value = "")]
+    pub peer: String,
+
+    /// Room name to join.
+    #[arg(default_value = "default")]
+    pub room: String,
+}
+
+#[derive(clap::Args, Debug)]
+pub struct JoinArgs {
+    /// Room name to join.
+    #[arg(default_value = "default")]
+    pub room: String,
+
+    /// Connect directly to peer without host
+    #[arg(default_value = "", short, long)]
+    pub peer: String,
+}
+
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     /// Run a simple Pomodoro timer.
     Run(RunArgs),
     /// Connect to a peer (not implemented)
-    Connect {
-        #[arg(default_value = "")]
-        name: String,
-    },
+    Join(JoinArgs),
     /// Host a online Pomotimer (not implemented)
-    Host {
-        #[arg(default_value = "")]
-        name: String,
-    },
+    Host(HostArgs),
+    /// List Public Lobbies (not implemented)
+    List,
 }
