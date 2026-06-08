@@ -37,7 +37,9 @@ fn set_status() -> Box<dyn Fn(discord_rich_presence::activity::Activity)> {
         let client = std::cell::RefCell::new(client);
 
         return Box::new(move |act| {
-            client.borrow_mut().dc.set_activity(act).unwrap();
+            if client.borrow_mut().dc.set_activity(act).is_err() {
+                println!("warning: Discord rich presence unsuccessfully changed!")
+            };
         });
     } else {
         println!("tip: You can use discord rich presence with Pomotimer!");
@@ -72,9 +74,9 @@ async fn main() {
         Commands::Host(hostargs) => {
             let _ = host_iroh(hostargs).await;
         }
-        // Commands::Join(joinargs) => {
-        //     let _ = join_iroh(joinargs).await;
-        // }
+        Commands::Join(joinargs) => {
+            let _ = join_iroh(joinargs).await;
+        }
         _ => {
             println!("Sorry I haven't implemented this yet. Coming soon tho!!")
         }

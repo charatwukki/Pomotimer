@@ -46,7 +46,7 @@ pub struct JoinArgs {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Run a simple Pomodoro timer.
+    /// Run a simple feature rich solo Pomodoro timer.
     Run(RunArgs),
     /// Connect to a peer (not implemented)
     Join(JoinArgs),
@@ -54,4 +54,7 @@ pub enum Commands {
     Host(HostArgs),
     /// List Public Lobbies (not implemented)
     List,
+    //TODO: add heatmap to stats
+    /// Show study stats, try not to run too much! (Not implemented)
+    Stats,
 }
