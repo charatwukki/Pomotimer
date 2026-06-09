@@ -132,7 +132,6 @@ fn timer(secs: Duration) {
                 }
             }
         }
-        // TODO: I need to handle ctrlc, i'll use the crate I think.
         execute!(
             stdout(),
             cursor::MoveUp(2),
