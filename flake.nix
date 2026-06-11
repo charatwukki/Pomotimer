@@ -27,7 +27,7 @@
         craneLib = crane.mkLib pkgs;
 
         frontend = pkgs.buildNpmPackage {
-          pname = "my-app-frontend"; # TODO: change
+          pname = "pomotimer"; # TODO: change
           version = "0.1.0"; # TODO: change
 
           src = lib.fileset.toSource {
@@ -35,16 +35,14 @@
             fileset = lib.fileset.unions [
               ./package.json
               ./package-lock.json
-              ./tsconfig.json
-              ./tsconfig.node.json
-              ./vite.config.ts
+              ./vite.config.js
               ./index.html
               ./src
               ./public
             ];
           };
 
-          npmDepsHash = ""; # TODO: build once to get correct hash
+          npmDepsHash = "sha256-cjgpsBS/LF/9RVOR1I8IS+idyAC3bCf8SMQ7bhC1Hbk="; # TODO: build once to get correct hash
 
           installPhase = ''
             runHook preInstall
@@ -54,7 +52,7 @@
         };
 
         tauri = crane-tauri.lib.buildTauriApp { inherit pkgs craneLib; } {
-          pname = "my-app"; # TODO: change
+          pname = "pomotimer"; # TODO: change
           version = "0.1.0"; # TODO: change
           src = ./.;
           inherit frontend;
