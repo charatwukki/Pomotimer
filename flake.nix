@@ -25,11 +25,13 @@
         pkgs = nixpkgs.legacyPackages.${system};
         inherit (pkgs) lib;
         craneLib = crane.mkLib pkgs;
+        packageJson = lib.importJSON ./package.json;
+        pname = packageJson.name;
+        version = packageJson.version;
 
         frontend = pkgs.buildNpmPackage {
-          pname = "pomotimer"; # TODO: change
-          version = "0.1.0"; # TODO: change
-
+          pname = pname;
+          version = version;
           src = lib.fileset.toSource {
             root = ./.;
             fileset = lib.fileset.unions [
@@ -41,9 +43,10 @@
               ./public
             ];
           };
-
-          npmDepsHash = "sha256-cjgpsBS/LF/9RVOR1I8IS+idyAC3bCf8SMQ7bhC1Hbk="; # TODO: build once to get correct hash
-
+          npmDeps = pkgs.importNpmLock {
+            npmRoot = ./.;
+          };
+          npmConfigHook = pkgs.importNpmLock.npmConfigHook;
           installPhase = ''
             runHook preInstall
             cp -r dist $out
@@ -52,8 +55,8 @@
         };
 
         tauri = crane-tauri.lib.buildTauriApp { inherit pkgs craneLib; } {
-          pname = "pomotimer"; # TODO: change
-          version = "0.1.0"; # TODO: change
+          pname = pname; # TODO: change
+          version = version; # TODO: change
           src = ./.;
           inherit frontend;
         };
