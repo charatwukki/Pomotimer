@@ -13,13 +13,12 @@ function App() {
     setGreetMsg(await invoke("greet", { name }));
   }
 
-console.log("testing to see if javascript works in this function");
+// This is the ui portion... 
   return (
     <main className="container">
       <h1>I am editing this stuff now</h1>
-
+  
       <div className="row">
-
         Images were here. Not commenting.. 
       </div>
       <p>Click on the Tauri, Vite, and React logos to learn more.</p>
@@ -64,8 +63,6 @@ a website */
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
 */
-
-
 
 
 
