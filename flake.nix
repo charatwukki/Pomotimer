@@ -83,8 +83,30 @@
           fmt = craneLib.cargoFmt { src = tauri.commonArgs.src; };
         };
 
+        devShells.pomotimer = pkgs.mkShell {
+          packages = [ tauri.app ];
+          shellHook = ''
+            export REPO_ROOT=$(git rev-parse --show-toplevel)
+            export PS1="Pomotimer $"
+            export PS1="\[\e[38;5;141m\]❯\[\e[0m\] "
+            clear
+          '';
+        };
+
         devShells.default = craneLib.devShell {
           checks = self.checks.${system};
+
+          packages = [
+          ]
+          ++ (with pkgs; [
+            rustfmt
+            rust-analyzer
+            cargo-xwin
+          ]);
+          shellHook = ''
+            export REPO_ROOT=$(git rev-parse --show-toplevel)
+            export PS1="\n\[\033[1;32m\][nix-shell:\w]\$\[\033[0m\] "
+          '';
         };
       }
     );
