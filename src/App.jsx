@@ -49,3 +49,6 @@ function App() {
 }
 
 export default App;
+
+/* do backflips in order to get npm working */
+
