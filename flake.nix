@@ -56,11 +56,13 @@
         };
 
         tauri = crane-tauri.lib.buildTauriApp { inherit pkgs craneLib; } {
-          pname = pname; # TODO: change
-          version = version; # TODO: change
+          pname = pname;
+          version = version;
           src = ./.;
           inherit frontend;
-          cargoExtraArgs = "--jobs 2";
+          craneArgs = {
+            CARGO_BUILD_JOBS = "2";
+          };
         };
       in
       {
