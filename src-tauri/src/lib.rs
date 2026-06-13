@@ -4,6 +4,8 @@ use std::{
     sync::Mutex,
     time::{Duration, Instant},
 };
+
+mod networking;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -33,8 +35,17 @@ pub fn run() {
         .manage(Timers {
             timers: Mutex::new(vec![Instant::now()]),
         })
+        .manage(networking::create_pc())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, create_timer, get_timer])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            create_timer,
+            get_timer,
+            networking::host,
+            networking::join,
+            networking::sendmessage,
+            networking::receivemessage,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
