@@ -60,6 +60,7 @@
           version = version; # TODO: change
           src = ./.;
           inherit frontend;
+          cargoExtraArgs = "--jobs 2";
         };
       in
       {
