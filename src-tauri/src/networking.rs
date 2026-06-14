@@ -4,7 +4,7 @@
 use futures::{FutureExt, StreamExt};
 use iroh::{endpoint::presets, protocol::Router, Endpoint, SecretKey};
 use iroh_gossip::{
-    api::{Event::Received, GossipReceiver, GossipSender, Message},
+    api::{Event::Received, GossipReceiver, GossipSender},
     Gossip, TopicId,
 };
 use sha2::{Digest, Sha256};
@@ -33,6 +33,7 @@ fn get_secret(string: &str) -> SecretKey {
 }
 
 #[tauri::command]
+#[specta::specta]
 pub async fn host(state: tauri::State<'_, Pomoconnection>, room: String) -> Result<(), String> {
     let endpoint = Endpoint::builder(presets::N0)
         .secret_key(get_secret(&room))
@@ -70,6 +71,7 @@ pub async fn host(state: tauri::State<'_, Pomoconnection>, room: String) -> Resu
 }
 
 #[tauri::command]
+#[specta::specta]
 pub async fn join(state: tauri::State<'_, Pomoconnection>, room: String) -> Result<(), String> {
     let endpoint = Endpoint::builder(presets::N0)
         .bind()
@@ -106,6 +108,7 @@ pub async fn join(state: tauri::State<'_, Pomoconnection>, room: String) -> Resu
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn receivemessage(state: tauri::State<'_, Pomoconnection>) -> Option<String> {
     let mut lock = match state.pc.try_lock() {
         Ok(lock) => lock,
@@ -124,6 +127,7 @@ pub fn receivemessage(state: tauri::State<'_, Pomoconnection>) -> Option<String>
 }
 
 #[tauri::command]
+#[specta::specta]
 pub async fn sendmessage(
     state: tauri::State<'_, Pomoconnection>,
     message: String,
