@@ -3,40 +3,40 @@ import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 import { preinitModule } from "react-dom";
+import { commands } from "./bindings-js-files/index.js";
+
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [host, hostName] = useState("");
 
   async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+    setGreetMsg(await invoke("Host", { name }));
   }
 
-console.log("testing to see if javascript works in this function");
+// This is the ui portion... 
   return (
     <main className="container">
       <h1>I am editing this stuff now</h1>
-
+  
       <div className="row">
-
         Images were here. Not commenting.. 
       </div>
       <p>Click on the Tauri, Vite, and React logos to learn more.</p>
 
       <form
         className="row"
-        onSubmit={(e) => {
+        onSubmit={(e) => {onabort
           e.preventDefault();
           greet();
         }}
       >
         <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
+          id="host-button"
+          onChange={(e) => hostName(e.currentTarget.value)}
           placeholder="does this print????"
         />
-        <button type="submit">Greet</button>
+        <button type="submit">Host</button>
       </form>
       <p>{greetMsg}</p>
     </main>
@@ -64,9 +64,7 @@ a website */
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
 */
-
-
-
+ // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
 
 
