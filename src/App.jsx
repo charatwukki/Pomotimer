@@ -14,23 +14,20 @@ function App() {
     setGreetMsg(await invoke("Host", { name }));
   }
 
-<<<<<<< HEAD
+  function handleClick() {
+    alert("You are hosting " + hostName); 
+  }
+
+
 // This is the ui portion... 
   return (
+
     <main className="container">
       <h1>I am editing this stuff now</h1>
   
       <div className="row">
         Images were here. Not commenting.. 
       </div>
-=======
-  console.log("testing to see if javascript works in this function");
-  return (
-    <main className="container">
-      <h1>I am editing this stuff now</h1>
-
-      <div className="row">Images were here. Not commenting..</div>
->>>>>>> 52a817edf04b3d8ed63098989407459cbf3df1d4
       <p>Click on the Tauri, Vite, and React logos to learn more.</p>
 
       <form
@@ -38,14 +35,16 @@ function App() {
         onSubmit={(e) => {onabort
           e.preventDefault();
           greet();
+          
         }}
       >
         <input
           id="host-button"
-          onChange={(e) => hostName(e.currentTarget.value)}
-          placeholder="does this print????"
+          onChange={(e) => hostName(e.currentTarget.value)} // e.currentTarget.value = value of hostName
+          placeholder="why does this print..."
         />
-        <button type="submit">Host</button>
+        <button onClick={handleClick} >Host</button>
+        
       </form>
       <p>{greetMsg}</p>
     </main>
@@ -73,7 +72,6 @@ a website */
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
 */
-<<<<<<< HEAD
  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
 
@@ -83,5 +81,3 @@ a website */
 
 
 
-=======
->>>>>>> 52a817edf04b3d8ed63098989407459cbf3df1d4
