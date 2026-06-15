@@ -37,8 +37,6 @@ impl Drop for Dc {
 /// Pomotype, check bindings for all possible pomotypes (will err in console if invalid)
 pub async fn set_status(
     state: tauri::State<'_, Discord>,
-    name: &str,
-    seconds: u32,
     pomotype: PomoType,
 ) -> Result<(), String> {
     let mut lock = state.dc.lock().await;
@@ -47,11 +45,7 @@ pub async fn set_status(
         connected: false,
     });
     if client.dc.connect().is_ok() {
-        if client
-            .dc
-            .set_activity(pomo_activity(name, seconds, pomotype))
-            .is_ok()
-        {
+        if client.dc.set_activity(pomo_activity(pomotype)).is_ok() {
             client.connected = true;
         } else {
             eprintln!("warning: Discord rich presence not established.")
@@ -62,17 +56,24 @@ pub async fn set_status(
     Ok(())
 }
 #[derive(Type, Deserialize, Serialize)]
+pub struct StudyArgs {
+    seconds: u32,
+    name: String,
+}
+#[derive(Type, Deserialize, Serialize)]
+pub struct RestArgs {
+    seconds: u32,
+    name: String,
+}
+
+#[derive(Type, Deserialize, Serialize)]
 pub enum PomoType {
-    Study,
-    Rest,
+    Study(StudyArgs),
+    Rest(RestArgs),
     AFK,
 }
 
-fn pomo_activity(
-    name: &str,
-    seconds: u32,
-    pomotype: PomoType,
-) -> discord_rich_presence::activity::Activity<'static> {
+fn pomo_activity(pomotype: PomoType) -> discord_rich_presence::activity::Activity<'static> {
     use discord_rich_presence::activity::{
         Activity, ActivityType, Assets, Button, StatusDisplayType, Timestamps,
     };
@@ -86,33 +87,48 @@ fn pomo_activity(
     let mut act = Activity::new() // TODO: Implement secrets/party when i make multiplayer.
         .name("Pomodoro")
         .details_url("https://example.com/details") // TODO: Point this to readme
-        .state(format!("Doing {}", name)) // TODO: fix on empty
-        .state_url("https://example.com/state")
         .activity_type(ActivityType::Competing)
         .status_display_type(StatusDisplayType::Name)
-        .timestamps(Timestamps::new().start(dnow).end(dnow + seconds as i64))
         .buttons(vec![
             Button::new("Source Code", "https://github.com/charatwukki/Pomotimer"),
             // Button::new("Visit Site", "https://example.com"),
         ]);
     match pomotype {
-        PomoType::Rest => {
-            act = act.details("Resting zzz...").assets(
-                Assets::new()
-                    .large_image("todo")
-                    .large_text("Pomodoro Timer")
-                    .small_image("rest")
-                    .small_text("Resting"),
-            );
+        PomoType::Rest(args) => {
+            act = act
+                .details("Resting zzz...")
+                .timestamps(
+                    Timestamps::new()
+                        .start(dnow)
+                        .end(dnow + args.seconds as i64),
+                )
+                .assets(
+                    Assets::new()
+                        .large_image("todo")
+                        .large_text("Pomodoro Timer")
+                        .small_image("rest")
+                        .small_text("Resting"),
+                )
+                .state(format!("Doing {}", args.name)) // TODO: fix on empty
+                .state_url("https://example.com/state");
         }
-        PomoType::Study => {
-            act = act.details("Working Hard!").assets(
-                Assets::new()
-                    .large_image("todo")
-                    .large_text("Pomodoro Timer")
-                    .small_image("study")
-                    .small_text("Studying"),
-            );
+        PomoType::Study(args) => {
+            act = act
+                .details("Working Hard!")
+                .timestamps(
+                    Timestamps::new()
+                        .start(dnow)
+                        .end(dnow + args.seconds as i64),
+                )
+                .assets(
+                    Assets::new()
+                        .large_image("todo")
+                        .large_text("Pomodoro Timer")
+                        .small_image("study")
+                        .small_text("Studying"),
+                )
+                .state(format!("Doing {}", args.name)) // TODO: fix on empty
+                .state_url("https://example.com/state");
         }
         _ => {}
     };

@@ -62,12 +62,10 @@ export const commands = {
 	 *  Name of activity, e.g, maths, science and stuff
 	 *  Time in seconds for completion
 	 *  Pomotype, check bindings for all possible pomotypes (will err in console if invalid)
-	 * @param {string} name
-	 * @param {number} seconds
 	 * @param {pomotimer_lib$discord.PomoType} pomotype
 	 * @returns {Promise<{ status: "ok"; data: null } | { status: "error"; error: string }>}
 	 */
-	setStatus: (name, seconds, pomotype) => typedError(__TAURI_INVOKE("set_status", { name, seconds, pomotype })),
+	setStatus: (pomotype) => typedError(__TAURI_INVOKE("set_status", { pomotype })),
 };
 
 /** Events */
