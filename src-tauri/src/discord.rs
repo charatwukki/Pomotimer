@@ -10,6 +10,14 @@ pub struct Discord {
     dc: Mutex<Option<Dc>>,
 }
 
+impl Discord {
+    pub fn new() -> Discord {
+        Discord {
+            dc: Mutex::new(None),
+        }
+    }
+}
+
 impl Drop for Dc {
     fn drop(&mut self) {
         if self.dc.close().is_ok() {

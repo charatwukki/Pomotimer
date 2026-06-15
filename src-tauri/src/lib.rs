@@ -13,6 +13,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(timer::Timers::new())
         .manage(networking::create_pc())
+        .manage(discord::Discord::new())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(handlers)
         .run(tauri::generate_context!())
