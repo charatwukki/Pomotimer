@@ -1,6 +1,7 @@
 // TODO: Clippy pedantic
 // TODO: https://www.blazingly.fast/
 
+mod discord;
 mod events;
 mod helpers;
 mod networking;
@@ -17,18 +18,6 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
-#[derive(serde::Serialize, serde::Deserialize, specta::Type)]
-pub enum TimerState {
-    Rest,
-    Study,
-    Afk,
-}
-#[tauri::command]
-#[specta::specta]
-/// FUNCTION DOES NOTHING CURRENTLY
-fn set_discord(state: TimerState) {}
-
 fn create_bindings() -> tauri_specta::Builder<tauri::Wry> {
     let builder = tauri_specta::Builder::<tauri::Wry>::new()
         .semantic_types(specta_typescript::semantic::Configuration::default())
@@ -41,7 +30,7 @@ fn create_bindings() -> tauri_specta::Builder<tauri::Wry> {
             networking::join,
             networking::sendmessage,
             networking::receivemessage,
-            set_discord,
+            discord::set_status,
         ])
         // .typ::<Custom>()
         // .typ::<Testing>()
