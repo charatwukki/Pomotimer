@@ -5,7 +5,6 @@ import "./App.css";
 import { preinitModule } from "react-dom";
 import { commands } from "./bindings-js-files/index.js";
 
-
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
   const [host, hostName] = useState("");
@@ -15,27 +14,58 @@ function App() {
   }
 
   function handleClick() {
-    alert("You are hosting " + hostName); 
+    alert("You are hosting " + hostName);
   }
 
-
-// This is the ui portion... 
+  // This is the ui portion...
   return (
-
     <main className="container">
       <h1>I am editing this stuff now</h1>
-  
-      <div className="row">
-        Images were here. Not commenting.. 
-      </div>
+
+      <div className="row">Images were here. Not commenting..</div>
       <p>Click on the Tauri, Vite, and React logos to learn more.</p>
 
+      <button
+        onClick={async () => {
+          commands.print("button1");
+          const x = await commands.host("Hello");
+          if (x.status === "error") {
+            commands.print("error: " + x.error);
+          } else {
+            commands.print("WHATTHEFUCK");
+          }
+        }}
+      >
+        Button 1
+      </button>
+      <button
+        onClick={() => {
+          commands.print("button2");
+          commands.join("Hello");
+        }}
+      >
+        Button 2
+      </button>
+
+      <button
+        onClick={async () => {
+          commands.print("button3");
+          let x = await commands.receivemessage();
+          if (x === null) {
+            commands.print("NOTHING");
+            commands.print(x);
+          } else {
+            commands.print(x);
+          }
+        }}
+      >
+        Button 3
+      </button>
       <form
         className="row"
-        onSubmit={(e) => {onabort
-          e.preventDefault();
-          greet();
-          
+        onSubmit={async (_) => {
+          await commands.sendmessage(host);
+          commands.print("Sent: " + host);
         }}
       >
         <input
@@ -43,8 +73,7 @@ function App() {
           onChange={(e) => hostName(e.currentTarget.value)} // e.currentTarget.value = value of hostName
           placeholder="why does this print..."
         />
-        <button onClick={handleClick} >Host</button>
-        
+        <button onClick={() => {}}>SendMessage</button>
       </form>
       <p>{greetMsg}</p>
     </main>
@@ -72,12 +101,4 @@ a website */
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
 */
- // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-
-
-
-
-
-
-
-
+// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/

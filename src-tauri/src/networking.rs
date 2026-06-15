@@ -4,7 +4,7 @@
 use std::time::Duration;
 
 use futures::{FutureExt, StreamExt};
-use iroh::{endpoint::presets, protocol::Router, Endpoint, SecretKey};
+use iroh::{endpoint::presets, protocol::Router, Endpoint, PublicKey, SecretKey};
 use iroh_gossip::{
     api::{Event::Received, GossipReceiver, GossipSender},
     Gossip, TopicId,
@@ -34,33 +34,46 @@ fn get_secret(string: &str) -> SecretKey {
     secret_key_from_passphrase(&("pomotimer".to_owned() + string))
 }
 
-#[tauri::command]
-#[specta::specta]
-/// Host a connection, this will error if you try to run this/join twice.
-pub async fn host(state: tauri::State<'_, Pomoconnection>, room: String) -> Result<(), String> {
+pub async fn network(
+    state: tauri::State<'_, Pomoconnection>,
+    bootstrap: Vec<PublicKey>,
+    sk: Option<SecretKey>,
+) -> Result<(), String> {
+    println!("Waiting for lock");
+    let mut lock = state.pc.lock().await;
+    println!("Lock obtained, proceeding to network.");
+    if let Some(Pc { .. }) = &*lock {
+        eprintln!("Can't host twice.");
+        return Err("Hosted/joined twice".to_string());
+    }
+    let secret = match sk {
+        None => SecretKey::generate(),
+        Some(key) => key,
+    };
     let endpoint = Endpoint::builder(presets::N0)
-        .secret_key(get_secret(&room))
+        .secret_key(secret)
         .bind()
         .await
         .map_err(|e| e.to_string())?;
+    println!("Connected the endpoint.");
     let gossip = Gossip::builder().spawn(endpoint.clone());
     let router = Router::builder(endpoint)
         .accept(iroh_gossip::ALPN, gossip.clone())
         .spawn();
     let topic_id = TopicId::from_bytes(sha2::Sha256::digest(b"pomotimer").into());
     let (sender, mut receiver) = gossip
-        .subscribe(topic_id, vec![])
+        .subscribe(topic_id, bootstrap)
         .await
         .map_err(|e| e.to_string())?
         .split();
+    println!("Waiting for someone to join/joining.");
     receiver.joined().await.map_err(|e| e.to_string())?;
+    println!("Connected!");
     sender
         .broadcast(b"Awesomesauce".to_vec().into())
         .await
         .unwrap();
-    let mut lock = state.pc.lock().await;
     match &*lock {
-        Some(Pc { .. }) => return Err("Can't host join/twice idiot chara".to_string()),
         None => {
             *lock = Some(Pc {
                 router,
@@ -68,6 +81,7 @@ pub async fn host(state: tauri::State<'_, Pomoconnection>, room: String) -> Resu
                 sender,
             });
         }
+        _ => {}
     }
 
     Ok(())
@@ -75,40 +89,21 @@ pub async fn host(state: tauri::State<'_, Pomoconnection>, room: String) -> Resu
 
 #[tauri::command]
 #[specta::specta]
+/// Host a connection, this will error if you try to run this/join twice.
+pub async fn host(state: tauri::State<'_, Pomoconnection>, room: String) -> Result<(), String> {
+    network(state, vec![], Some(get_secret(&room.to_string()))).await
+}
+
+#[tauri::command]
+#[specta::specta]
 /// Join a connection, you can string both the top and the bottom to join the host
 pub async fn join(state: tauri::State<'_, Pomoconnection>, room: String) -> Result<(), String> {
-    let endpoint = Endpoint::builder(presets::N0)
-        .bind()
-        .await
-        .map_err(|e| e.to_string())?;
-    let gossip = Gossip::builder().spawn(endpoint.clone());
-    let router = Router::builder(endpoint)
-        .accept(iroh_gossip::ALPN, gossip.clone())
-        .spawn();
-    let topic_id = TopicId::from_bytes(sha2::Sha256::digest(b"pomotimer").into());
-    let (sender, mut receiver) = gossip
-        .subscribe(topic_id, vec![get_secret(&room).public()])
-        .await
-        .map_err(|e| e.to_string())?
-        .split();
-    receiver.joined().await.map_err(|e| e.to_string())?;
-    sender
-        .broadcast(b"Awesomesauce".to_vec().into())
-        .await
-        .unwrap();
-    let mut lock = state.pc.lock().await;
-    match &*lock {
-        Some(Pc { .. }) => return Err("Can't join/host twice idiot chara".to_string()),
-        None => {
-            *lock = Some(Pc {
-                router,
-                receiver,
-                sender,
-            });
-        }
-    }
-
-    Ok(())
+    network(
+        state,
+        vec![get_secret(&room.to_string()).public()],
+        Some(SecretKey::generate()),
+    )
+    .await
 }
 
 #[tauri::command]
@@ -136,12 +131,12 @@ pub fn receivemessage(state: tauri::State<'_, Pomoconnection>) -> Option<String>
 /// This is to send a connection, both host and join can send one. plain text.
 pub async fn sendmessage(
     state: tauri::State<'_, Pomoconnection>,
-    message: String,
+    message: &str,
 ) -> Result<(), String> {
     let mut lock = state.pc.lock().await;
     match &mut *lock {
         Some(Pc { sender, .. }) => sender
-            .broadcast(message.into_bytes().into())
+            .broadcast(message.as_bytes().to_vec().into())
             .await
             .map_err(|e| e.to_string())?,
         None => {
