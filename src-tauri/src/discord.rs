@@ -7,7 +7,8 @@ struct Dc {
     connected: bool,
 }
 pub struct Discord {
-    dc: Mutex<Option<Dc>>,
+    dc: Mutex<Option<Dc>>, // TODO: Why is this even an option? why not just have discord always
+                           // going.
 }
 
 impl Discord {
