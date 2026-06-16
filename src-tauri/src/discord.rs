@@ -76,7 +76,7 @@ pub enum PomoType {
 
 fn pomo_activity(pomotype: PomoType) -> discord_rich_presence::activity::Activity<'static> {
     use discord_rich_presence::activity::{
-        Activity, ActivityType, Assets, Button, StatusDisplayType, Timestamps,
+        Activity, ActivityType, Assets, StatusDisplayType, Timestamps,
     };
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -87,13 +87,13 @@ fn pomo_activity(pomotype: PomoType) -> discord_rich_presence::activity::Activit
 
     let mut act = Activity::new() // TODO: Implement secrets/party when i make multiplayer.
         .name("Pomodoro")
-        .details_url("https://example.com/details") // TODO: Point this to readme
+        .details_url("https://github.com/charatwukki/Pomotimer")
         .activity_type(ActivityType::Competing)
-        .status_display_type(StatusDisplayType::Name)
-        .buttons(vec![
-            Button::new("Source Code", "https://github.com/charatwukki/Pomotimer"),
-            // Button::new("Visit Site", "https://example.com"),
-        ]);
+        .status_display_type(StatusDisplayType::Name);
+    // .buttons(vec![
+    //     Button::new("Source Code", "https://github.com/charatwukki/Pomotimer"),
+    //     // Button::new("Visit Site", "https://example.com"),
+    // ]);
     match pomotype {
         PomoType::Rest(args) => {
             act = act
@@ -110,7 +110,14 @@ fn pomo_activity(pomotype: PomoType) -> discord_rich_presence::activity::Activit
                         .small_image("rest")
                         .small_text("Resting"),
                 )
-                .state(format!("Doing {}", args.name)) // TODO: fix on empty
+                .state(format!(
+                    "Doing {}",
+                    if args.name.is_empty() {
+                        "a pomodoro"
+                    } else {
+                        &args.name
+                    }
+                ))
                 .state_url("https://example.com/state");
         }
         PomoType::Study(args) => {
@@ -128,7 +135,14 @@ fn pomo_activity(pomotype: PomoType) -> discord_rich_presence::activity::Activit
                         .small_image("study")
                         .small_text("Studying"),
                 )
-                .state(format!("Doing {}", args.name)) // TODO: fix on empty
+                .state(format!(
+                    "Doing {}",
+                    if args.name.is_empty() {
+                        "a pomodoro"
+                    } else {
+                        &args.name
+                    }
+                ))
                 .state_url("https://example.com/state");
         }
         _ => {}
