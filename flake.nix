@@ -146,6 +146,7 @@
               wrapGAppsHook4
               rustc
               prettier
+              mdbook
             ]);
 
             shellHook = ''

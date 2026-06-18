@@ -196,9 +196,10 @@ fn pomo_activity(
 
     let mut act = Activity::new() // TODO: Implement secrets/party when i make multiplayer.
         .name("Pomodoro")
-        .details_url("https://example.com/details") // TODO: Point this to readme
+        .details_url("https://github.com/charatwukki/Pomotimer")
         .state(format!("Doing {}", name))
-        .state_url("https://example.com/state")
+        .state_url("https://example.com/state") // TODO: create documentation for state. like i
+                                                // could have documentaiton for stuydy vs rest
         .activity_type(ActivityType::Competing)
         .status_display_type(StatusDisplayType::Name)
         .timestamps(
@@ -207,7 +208,7 @@ fn pomo_activity(
                 .end(dnow + time.as_secs() as i64),
         )
         .buttons(vec![
-            Button::new("Source Code", "https://github.com/charatwukki/Pomotimer"),
+            // Button::new("Source Code", "https://github.com/charatwukki/Pomotimer"),
             // Button::new("Visit Site", "https://example.com"),
         ]);
     match pomotype {
