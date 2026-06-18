@@ -44,8 +44,7 @@ fn send_notification(summary: &str, body: &str) {
         .show()
         .expect("failed to send notification");
 }
-fn timer(secs: Duration) {
-    // TODO: I need to be able to see the name of the subject i'm doing
+fn timer(secs: Duration, name: &str) {
     use crossterm::event::{Event, KeyCode, KeyModifiers};
     use crossterm::{cursor, event, execute, terminal};
     use std::io::stdout;
@@ -67,7 +66,8 @@ fn timer(secs: Duration) {
             break;
         }
         print!(
-            "{}/{}",
+            "doing {} - {}/{}",
+            name,
             humantime::format_duration(Duration::from_secs(secs.as_secs() - i as u64)),
             humantime::format_duration(secs)
         );
@@ -101,7 +101,6 @@ fn timer(secs: Duration) {
                 }
             }
         }
-        // TODO: I need to handle ctrlc, i'll use the crate I think.
 
         execute!(
             stdout(),
@@ -198,7 +197,7 @@ fn pomo_activity(
     let mut act = Activity::new() // TODO: Implement secrets/party when i make multiplayer.
         .name("Pomodoro")
         .details_url("https://example.com/details") // TODO: Point this to readme
-        .state(format!("Doing {}", name)) // TODO: fix on empty
+        .state(format!("Doing {}", name))
         .state_url("https://example.com/state")
         .activity_type(ActivityType::Competing)
         .status_display_type(StatusDisplayType::Name)
@@ -238,7 +237,14 @@ pub fn run(
     runargs: crate::structs::RunArgs,
     _status: Box<dyn Fn(discord_rich_presence::activity::Activity)>,
 ) {
-    let RunArgs { study, rest, name } = runargs;
+    let RunArgs {
+        study,
+        rest,
+        mut name,
+    } = runargs;
+    if name.is_empty() {
+        name = "pomodoro".to_string();
+    }
     use humantime::parse_duration;
     let now = chrono::Local::now();
     let mut timestamps: Vec<NaiveTime> = vec![];
@@ -255,8 +261,7 @@ pub fn run(
 
     timestamps.push(chrono::Local::now().time().with_nanosecond(0).unwrap());
     _status(pomo_activity(&name, studyduration, PomoType::Study));
-    timer(studyduration); // BUG: I need to error handle this
-                          // but i don't care tbh
+    timer(studyduration, &name);
     send_notification(
         "Study Finished",
         &format!("Your study timer of {} is finished", study),
@@ -265,8 +270,7 @@ pub fn run(
     timestamps.push(chrono::Local::now().time().with_nanosecond(0).unwrap());
 
     _status(pomo_activity(&name, restduration, PomoType::Rest));
-    timer(restduration); // TODO: I want more granularity. like
-                         // seconds and stuff
+    timer(restduration, &name);
     timestamps.push(chrono::Local::now().time().with_nanosecond(0).unwrap());
     send_notification(
         "Break Finished",
